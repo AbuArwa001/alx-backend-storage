@@ -1,2 +1,1 @@
-#!/usr/bin/env bash
-mongosh --eval "show dbs"
+show dbs
