@@ -2,6 +2,8 @@
 """
 Module with a Function to list schools with specific topi
 """
+
+
 def schools_by_topic(mongo_collection, topic):
     """
     Function to list schools with specific topi
