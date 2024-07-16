@@ -1,1 +1,2 @@
+//find docs with name
 db.school.find({"name" : "Holberton school"})

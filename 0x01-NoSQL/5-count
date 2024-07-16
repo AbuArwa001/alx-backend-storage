@@ -1,1 +1,2 @@
+// check number of docs
 db.school.count()

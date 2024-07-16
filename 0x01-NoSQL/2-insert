@@ -1,3 +1,4 @@
+// insert one document
 db.school.insertOne({
 "name": "Holberton school"
 })
