@@ -3,6 +3,8 @@
     Function that changes all topics of a
     school document based on the name
 """
+
+
 def insert_school(mongo_collection, **kwargs):
     """
     Function that changes all topics of a
