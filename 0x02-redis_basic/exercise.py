@@ -104,3 +104,29 @@ class Cache:
         """
         value = self._redis.get(key)
         return value.decode("utf-8")
+
+
+cache = Cache()
+
+# def replay(method: Callable) -> None:
+#     # inputs = cache._redis.lrange("{}:inputs".format(method.__qualname__), 0, -1)
+#     outputs = cache._redis.lrange("{}:outputs".format(method.__qualname__), 0, -1)
+#     count =  cache.get(method.__qualname__)
+#     print("{} was called {} times:".format(method, count))
+#     for key in outputs:
+#         print("{}(*{}) -> {} times:".format(method, cache.get_str(key), key.decode('utf-8')))
+def replay(method: Callable) -> None:
+    """
+    Display the history of calls of a particular function.
+    """
+    inputs = cache._redis.lrange(f"{method.__qualname__}:inputs", 0, -1)
+    outputs = cache._redis.lrange(f"{method.__qualname__}:outputs", 0, -1)
+    count = cache.get(method.__qualname__)
+    print(f"{method.__qualname__} was called {count.decode('utf-8')} times:")
+    
+    for input_key, output_key in zip(inputs, outputs):
+        input_str = input_key.decode('utf-8')
+        output_str = output_key.decode('utf-8')
+        print(f"{method.__qualname__}(*({input_str},)) -> {output_str}")
+
+replay(cache.store)
