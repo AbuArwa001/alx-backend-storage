@@ -14,6 +14,7 @@ def count_calls(method: Callable) -> Callable:
     Prototype: def count_calls(method: Caallable) -> Callable:
     Returns a Callable
     """
+
     @wraps(method)
     def wrapper(self, *args, **kwds):
         """
@@ -23,6 +24,7 @@ def count_calls(method: Callable) -> Callable:
         key_m = method.__qualname__
         self._redis.incr(key_m)
         return method(self, *args, **kwds)
+
     return wrapper
 
 
@@ -34,6 +36,7 @@ def call_history(method: Callable) -> Callable:
     Returns:
         Callable: The decorated method.
     """
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """
@@ -49,6 +52,7 @@ def call_history(method: Callable) -> Callable:
         self._redis.rpush(output_key, str(output))
 
         return output
+
     return wrapper
 
 
@@ -56,6 +60,7 @@ class Cache:
     """
     Class containing a method to generate and set keys
     """
+
     def __init__(self):
         """
         Initialize the Cache class.
@@ -84,8 +89,9 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str,
-            fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
+    def get(
+        self, key: str, fn: Optional[Callable] = None
+    ) -> Union[str, bytes, int, float]:
         """
         Convert data back to desired format
         """
@@ -108,13 +114,17 @@ class Cache:
 
 cache = Cache()
 
+
 # def replay(method: Callable) -> None:
-#     # inputs = cache._redis.lrange("{}:inputs".format(method.__qualname__), 0, -1)
-#     outputs = cache._redis.lrange("{}:outputs".format(method.__qualname__), 0, -1)
+#     # inputs = cache._redis.lrange("{}:
+# inputs".format(method.__qualname__), 0, -1)
+#     outputs = cache._redis.lrange("{}:outputs"
+# .format(method.__qualname__), 0, -1)
 #     count =  cache.get(method.__qualname__)
 #     print("{} was called {} times:".format(method, count))
 #     for key in outputs:
-#         print("{}(*{}) -> {} times:".format(method, cache.get_str(key), key.decode('utf-8')))
+#         print("{}(*{}) -> {} times:".
+# format(method, cache.get_str(key), key.decode('utf-8')))
 def replay(method: Callable) -> None:
     """
     Display the history of calls of a particular function.
@@ -123,10 +133,11 @@ def replay(method: Callable) -> None:
     outputs = cache._redis.lrange(f"{method.__qualname__}:outputs", 0, -1)
     count = cache.get(method.__qualname__)
     print(f"{method.__qualname__} was called {count.decode('utf-8')} times:")
-    
+
     for input_key, output_key in zip(inputs, outputs):
-        input_str = input_key.decode('utf-8')
-        output_str = output_key.decode('utf-8')
+        input_str = input_key.decode("utf-8")
+        output_str = output_key.decode("utf-8")
         print(f"{method.__qualname__}(*({input_str},)) -> {output_str}")
+
 
 replay(cache.store)
