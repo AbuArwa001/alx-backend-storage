@@ -25,6 +25,7 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwds)
     return wrapper
 
+
 class Cache:
     """
     Class containing a method to generate and set keys
@@ -55,7 +56,6 @@ class Cache:
         key = str(uuid.uuid4())  # Ensure key is a string
         self._redis.set(key, data)
         return key
-
 
     def get(self, key: str,
             fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
