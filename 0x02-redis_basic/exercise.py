@@ -4,7 +4,7 @@ Module contains a class to cache redis
 """
 import redis
 import uuid
-from typing import Union
+from typing import Union, Callable, Optional
 
 
 class Cache:
@@ -34,3 +34,25 @@ class Cache:
         key = str(uuid.uuid4())  # Ensure key is a string
         self._redis.set(key, data)
         return key
+
+
+    def get(self, key: str,
+            fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
+        """
+        Convert data back to desired format
+        """
+        value = self._redis.get(key)
+        return value if not fn else fn(value)
+
+    def get_int(self, key):
+        """
+        automatically parametrize Cache.get
+        """
+        return self.get(key, int)
+
+    def get_str(self, key):
+        """
+        automatically parametrize Cache.get
+        """
+        value = self._redis.get(key)
+        return value.decode("utf-8")
