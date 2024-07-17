@@ -135,7 +135,7 @@ def replay(method: Callable) -> None:
     count = len(input)
     times_str = "times"
     if count == 1:
-        times_str = "time"
+        times_str = "times"
     print(
         f"{method.__qualname__} was called {count
                                             .decode('utf-8')} {times_str}: "
