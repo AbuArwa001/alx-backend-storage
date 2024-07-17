@@ -125,22 +125,25 @@ cache = Cache()
 #     for key in outputs:
 #         print("{}(*{}) -> {} times:".
 # format(method, cache.get_str(key), key.decode('utf-8')))
-def replay(method: Callable) -> None:
+def replay(func: Callable):
     """
-    Display the history of calls of a particular function.
+    Prototype: def replay(func: Callable):
+    Displays history of calls of a particular function
     """
-    inputs = cache._redis.lrange(f"{method.__qualname__}:inputs", 0, -1)
-    outputs = cache._redis.lrange(f"{method.__qualname__}:outputs", 0, -1)
-    count = cache.get(method.__qualname__)
-    ts = "times"
-    if count == 1:
-        ts = "times"
-    print(f"{method.__qualname__} was called {count.decode('utf-8')} {ts}:")
-
-    for input_key, output_key in zip(inputs, outputs):
-        input_str = input_key.decode("utf-8")
-        output_str = output_key.decode("utf-8")
-        print(f"{method.__qualname__}(*({input_str},)) -> {output_str}")
+    r = redis.Redis()
+    key_m = func.__qualname__
+    inp_m = r.lrange("{}:inputs".format(key_m), 0, -1)
+    outp_m = r.lrange("{}:outputs".format(key_m), 0, -1)
+    calls_number = len(inp_m)
+    times_str = 'times'
+    if calls_number == 1:
+        times_str = 'time'
+    fin = '{} was called {} {}:'.format(key_m, calls_number, times_str)
+    print(fin)
+    for k, v in zip(inp_m, outp_m):
+        fin = '{}(*{}) -> {}'.format(
+            key_m, k.decode('utf-8'), v.decode('utf-8'))
+        print(fin)
 
 # def replay(method: Callable) -> None:
 #     """
