@@ -138,6 +138,3 @@ def replay(method: Callable) -> None:
         input_str = input_key.decode("utf-8")
         output_str = output_key.decode("utf-8")
         print(f"{method.__qualname__}(*({input_str},)) -> {output_str}")
-
-
-replay(cache.store)
