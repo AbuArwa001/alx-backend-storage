@@ -142,7 +142,7 @@ def replay(method: Callable) -> None:
     for input_key, output_key in zip(inputs, outputs):
         input_str = input_key.decode("utf-8")
         output_str = output_key.decode("utf-8")
-        print("{}(*({})) -> {}".format(fun, input_str, output_str))
+        print("{}(*{}) -> {}".format(fun, input_str, output_str))
 
 
 # def replay(method: Callable) -> None:
