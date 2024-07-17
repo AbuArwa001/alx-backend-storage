@@ -11,8 +11,14 @@ redis_conn = redis.Redis()
 
 
 def track_url_access(func):
+    """
+    function  tracking url access
+    """
     @functools.wraps(func)
     def wrapper(url):
+        """
+        Wrapper function Track URL access count in Redis
+        """
         # Track URL access count in Redis
         count_key = f"count:{url}"
         url_count = redis_conn.get(count_key)
@@ -29,6 +35,9 @@ def track_url_access(func):
 
 @track_url_access
 def get_page(url: str) -> str:
+    """
+    get_page function  tracking url access
+    """
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise exception for bad status codes
