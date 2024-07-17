@@ -18,6 +18,7 @@ class Cache:
         This initializes a connection to a Redis database.
         """
         self._redis = redis.Redis()
+        self._redis.flushdb()
 
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
