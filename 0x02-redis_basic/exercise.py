@@ -132,7 +132,10 @@ def replay(method: Callable) -> None:
     inputs = cache._redis.lrange(f"{method.__qualname__}:inputs", 0, -1)
     outputs = cache._redis.lrange(f"{method.__qualname__}:outputs", 0, -1)
     count = cache.get(method.__qualname__)
-    print(f"{method.__qualname__} was called {count.decode('utf-8')} times:")
+    ts = "times"
+    if count == 1:
+        ts = "times"
+    print(f"{method.__qualname__} was called {count.decode('utf-8')} {ts}:")
 
     for input_key, output_key in zip(inputs, outputs):
         input_str = input_key.decode("utf-8")
