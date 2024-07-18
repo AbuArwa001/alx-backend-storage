@@ -3,27 +3,40 @@
 Module contains a class to cache redis
 Author: Khalfan Athman
 """
+
 import redis
 import uuid
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, Any
 from functools import wraps
 
 
 def count_calls(method: Callable) -> Callable:
     """
-    Prototype: def count_calls(method: Caallable) -> Callable:
-    Returns a Callable
+    Decorator that counts the number of calls to a method.
+
+    Args:
+        method (Callable): The method to decorate.
+
+    Returns:
+        Callable: The decorated method.
     """
 
     @wraps(method)
-    def wrapper(self, *args, **kwds):
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         """
-        Prototype: def wrapper(self, *args, **kwds):
-        Returns wrapper
+        Wrapper function to increment call count.
+
+        Args:
+            self (Any): The instance the method is called on.
+            *args (Any): The positional arguments to the method.
+            **kwargs (Any): The keyword arguments to the method.
+
+        Returns:
+            Any: The output of the original method.
         """
         key_m = method.__qualname__
         self._redis.incr(key_m)
-        return method(self, *args, **kwds)
+        return method(self, *args, **kwargs)
 
     return wrapper
 
@@ -31,17 +44,26 @@ def count_calls(method: Callable) -> Callable:
 def call_history(method: Callable) -> Callable:
     """
     Decorator to store the history of inputs and outputs for a method.
+
     Args:
         method (Callable): The method to decorate.
+
     Returns:
         Callable: The decorated method.
     """
 
     @wraps(method)
-    def wrapper(self, *args, **kwargs):
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         """
-        Prototype: def wrapper(self, *args, **kwds):
-        Returns wrapper
+        Wrapper function to add input and output history.
+
+        Args:
+            self (Any): The instance the method is called on.
+            *args (Any): The positional arguments to the method.
+            **kwargs (Any): The keyword arguments to the method.
+
+        Returns:
+            Any: The output of the original method.
         """
         input_key = method.__qualname__ + ":inputs"
         output_key = method.__qualname__ + ":outputs"
@@ -58,10 +80,10 @@ def call_history(method: Callable) -> Callable:
 
 class Cache:
     """
-    Class containing a method to generate and set keys
+    Class for caching data using Redis.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the Cache class.
 
@@ -90,78 +112,71 @@ class Cache:
         return key
 
     def get(
-        self, key: str, fn: Optional[Callable] = None
+        self, key: str, fn: Optional[Callable[[bytes], Any]] = None
     ) -> Union[str, bytes, int, float]:
         """
-        Convert data back to desired format
+        Retrieve data from the Redis cache and optionally apply a
+        conversion function.
+        Parameters:
+        key (str): The key under which the data is stored.
+        fn (Optional[Callable[[bytes], Any]]):
+            An optional function to apply to the data.
+
+        Returns:
+        Union[str, bytes, int, float]:
+            The retrieved data, optionally converted.
         """
         value = self._redis.get(key)
         return value if not fn else fn(value)
 
-    def get_int(self, key):
+    def get_int(self, key: str) -> Optional[int]:
         """
-        automatically parametrize Cache.get
+        Retrieve data from the Redis cache and convert it to an integer.
+
+        Parameters:
+        key (str): The key under which the data is stored.
+
+        Returns:
+        Optional[int]:
+        The retrieved data as an integer, or None if conversion fails.
         """
         return self.get(key, int)
 
-    def get_str(self, key):
+    def get_str(self, key: str) -> Optional[str]:
         """
-        automatically parametrize Cache.get
+        Retrieve data from the Redis cache and convert it to a string.
+
+        Parameters:
+        key (str): The key under which the data is stored.
+
+        Returns:
+        Optional[str]:
+        The retrieved data as a string, or None if conversion fails.
         """
         value = self._redis.get(key)
-        return value.decode("utf-8")
+        return value.decode("utf-8") if value else None
 
 
 cache = Cache()
 
 
-# def replay(method: Callable) -> None:
-#     # inputs = cache._redis.lrange("{}:
-# inputs".format(method.__qualname__), 0, -1)
-#     outputs = cache._redis.lrange("{}:outputs"
-# .format(method.__qualname__), 0, -1)
-#     count =  cache.get(method.__qualname__)
-#     print("{} was called {} times:".format(method, count))
-#     for key in outputs:
-#         print("{}(*{}) -> {} times:".
-# format(method, cache.get_str(key), key.decode('utf-8')))
-
 def replay(method: Callable) -> None:
     """
     Display the history of calls of a particular function.
+
+    Parameters:
+    method (Callable): The method to replay.
     """
     fun = method.__qualname__
-    inputs = cache._redis.lrange("{}:inputs".format(fun), 0, -1)
-    outputs = cache._redis.lrange("{}:outputs".format(fun), 0, -1)
+    inputs = cache._redis.lrange(f"{fun}:inputs", 0, -1)
+    outputs = cache._redis.lrange(f"{fun}:outputs", 0, -1)
     count = cache.get(fun)
     ts = "times"
     if count == 1:
         ts = "time"
-    print("{} was called {} {}:".format(fun, count.decode('utf-8'), ts))
+    print(f"{fun} was called {count.decode('utf-8')} {ts}:")
 
     for input_key, output_key in zip(inputs, outputs):
         input_str = input_key.decode("utf-8")
         output_str = output_key.decode("utf-8")
-        print("{}(*{}) -> {}".format(fun, input_str, output_str))
-
-
-# def replay(method: Callable) -> None:
-#     """
-#     Display the history of calls of a particular function.
-#     """
-#     r = redis.Redis()
-#     inputs = r.lrange(f"{method.__qualname__}:inputs", 0, -1)
-#     outputs = r.lrange(f"{method.__qualname__}:outputs", 0, -1)
-#     count = len(input)
-#     times_str = "times"
-#     if count == 1:
-#         times_str = "times"
-#     print(
-#         f"{method.__qualname__} was called {count
-#                                             .decode('utf-8')} {times_str}: "
-#     )
-
-#     for input_key, output_key in zip(inputs, outputs):
-#         input_str = input_key.decode("utf-8")
-#         output_str = output_key.decode("utf-8")
-#         print(f"{method.__qualname__}(*({input_str},)) -> {output_str}"
+        print(f"{fun}(*{input_str}) -> {output_str}")
