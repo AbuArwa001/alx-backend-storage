@@ -1,47 +1,39 @@
 #!/usr/bin/env python3
-"""
-Module containing a get_page function
-"""
-import requests
+'''A module with tools for request caching and tracking.
+'''
 import redis
-import functools
+import requests
+from functools import wraps
+from typing import Callable
 
-# Initialize Redis connection
-redis_conn = redis.Redis()
+
+redis_store = redis.Redis()
+'''The module-level Redis instance.
+'''
 
 
-def track_url_access(func):
+def data_cacher(method: Callable) -> Callable:
     """
     function  tracking url access
     """
-    @functools.wraps(func)
-    def wrapper(url):
-        """
-        Wrapper function Track URL access count in Redis
-        """
-        # Track URL access count in Redis
-        count_key = f"count:{url}"
-        url_count = redis_conn.get(count_key)
-        if url_count:
-            redis_conn.incr(count_key)
-        else:
-            redis_conn.set(
-                count_key, 1, ex=10
-            )  # Cache with 10 second expiration
-        return func(url)
-
-    return wrapper
+    @wraps(method)
+    def invoker(url) -> str:
+        '''The wrapper function for caching the output.
+        '''
+        redis_store.incr(f'count:{url}')
+        result = redis_store.get(f'result:{url}')
+        if result:
+            return result.decode('utf-8')
+        result = method(url)
+        redis_store.set(f'count:{url}', 0)
+        redis_store.setex(f'result:{url}', 10, result)
+        return result
+    return invoker
 
 
-@track_url_access
+@data_cacher
 def get_page(url: str) -> str:
     """
     get_page function  tracking url access
     """
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise exception for bad status codes
-        return response.text
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching URL {url}: {e}")
-        return ""
+    return requests.get(url).text
