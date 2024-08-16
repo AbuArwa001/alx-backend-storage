@@ -1,43 +1,32 @@
 #!/usr/bin/env python3
-"""
-Module containing a get_page function
-"""
-import requests
+""" Redis Module """
+
+from functools import wraps
 import redis
-import functools
+import requests
+from typing import Callable
 
-# Initialize Redis connection
-redis_conn = redis.Redis()
+redis_ = redis.Redis()
 
 
-def track_url_access(func):
-    """
-    function  tracking url access
-    """
-    @functools.wraps(func)
-    def wrapper(url):
-        """
-        Wrapper function Track URL access count in Redis
-        """
-        # Track URL access count in Redis
-        redis_conn.incr(count_key)
-        count_key = f"count:{url}"
-        url_count = redis_conn.get(count_key)
-        if url_count:
-            return url_count.decode('utf-8')
-        else:
-            html = func(url)
-            redis_conn.setex(
-                count_key, 1, 10, html
-            )  # Cache with 10 second expiration
+def count_requests(method: Callable) -> Callable:
+    """ Decortator for counting """
+    @wraps(method)
+    def wrapper(url):  # sourcery skip: use-named-expression
+        """ Wrapper for decorator """
+        redis_.incr(f"count:{url}")
+        cached_html = redis_.get(f"cached:{url}")
+        if cached_html:
+            return cached_html.decode('utf-8')
+        html = method(url)
+        redis_.setex(f"cached:{url}", 10, html)
         return html
 
     return wrapper
 
 
-@track_url_access
+@count_requests
 def get_page(url: str) -> str:
-    """
-    get_page function  tracking url access
-    """
-    return requests.get(url).text
+    """ Obtain the HTML content of a  URL """
+    req = requests.get(url)
+    return req.text
