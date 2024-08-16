@@ -42,6 +42,7 @@ def get_page(url: str) -> str:
     """
     return requests.get(url).text
 
+
 if __name__ == "__main__":
     url = "http://google.com"
     # redis_conn.flushdb()
