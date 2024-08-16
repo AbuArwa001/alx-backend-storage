@@ -41,15 +41,3 @@ def get_page(url: str) -> str:
     get_page function  tracking url access
     """
     return requests.get(url).text
-
-
-if __name__ == "__main__":
-    url = "http://google.com"
-    # redis_conn.flushdb()
-    print(redis_conn.get(f"count:{url}"))
-    content = get_page(url)
-    if content:
-        print(redis_conn.get(f"count:{url}"))
-        print(content)
-    else:
-        print("Failed to fetch URL content.")
