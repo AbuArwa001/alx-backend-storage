@@ -9,33 +9,31 @@ import functools
 # Initialize Redis connection
 redis_conn = redis.Redis()
 
-
 def track_url_access(func):
     """
-    function  tracking url access
+    Decorator to track URL access count in Redis.
     """
     @functools.wraps(func)
     def wrapper(url):
-        """
-        Wrapper function Track URL access count in Redis
-        """
         # Track URL access count in Redis
         count_key = f"count:{url}"
         url_count = redis_conn.get(count_key)
+        
         if url_count:
+            # Increment the count if key exists
             redis_conn.incr(count_key)
         else:
-            redis_conn.set(
-                count_key, 1, ex=10
-            )  # Cache with 10 second expiration
+            # Set the count to 1 and set expiration to 10 seconds
+            redis_conn.set(count_key, 1, ex=10)
+        
+        # Return the result of the decorated function
         return func(url)
 
     return wrapper
 
-
 @track_url_access
 def get_page(url: str) -> str:
     """
-    get_page function  tracking url access
+    Fetch the content of the page at the given URL.
     """
     return requests.get(url).text
