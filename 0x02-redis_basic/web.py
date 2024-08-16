@@ -20,15 +20,17 @@ def track_url_access(func):
         Wrapper function Track URL access count in Redis
         """
         # Track URL access count in Redis
+        redis_conn.incr(count_key)
         count_key = f"count:{url}"
         url_count = redis_conn.get(count_key)
         if url_count:
-            redis_conn.incr(count_key)
+            return url_count.decode('utf-8')
         else:
-            redis_conn.set(
-                count_key, 1, ex=10
+            html = func(url)
+            redis_conn.setex(
+                count_key, 1, 10, html
             )  # Cache with 10 second expiration
-        return func(url)
+        return html
 
     return wrapper
 
@@ -39,3 +41,14 @@ def get_page(url: str) -> str:
     get_page function  tracking url access
     """
     return requests.get(url).text
+
+if __name__ == "__main__":
+    url = "http://google.com"
+    # redis_conn.flushdb()
+    print(redis_conn.get(f"count:{url}"))
+    content = get_page(url)
+    if content:
+        print(redis_conn.get(f"count:{url}"))
+        print(content)
+    else:
+        print("Failed to fetch URL content.")
