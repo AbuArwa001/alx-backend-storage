@@ -70,15 +70,19 @@ class Cache:
     Class containing a method to generate and set keys
     """
 
-    def __init__(self):
+    def __init__(self, host: str = 'localhost', port: int = 6379):
         """
         Initialize the Cache class.
 
         This initializes a connection to a Redis database.
         Author: Khalfan Athman
         """
-        self._redis = redis.Redis()
-        self._redis.flushdb()
+        try:
+            self._redis = redis.Redis(host=host, port=port)
+            self._redis.ping()  # Check if the connection is successful
+            self._redis.flushdb()
+        except redis.exceptions.ConnectionError as e:
+            pass
 
     @call_history
     @count_calls
