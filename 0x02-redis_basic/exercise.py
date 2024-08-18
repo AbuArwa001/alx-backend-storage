@@ -5,7 +5,7 @@ Author: Khalfan Athman
 """
 import redis
 import uuid
-from typing import Union, Callable, Optional, Any
+from typing import Union, Callable, Optional, Any, AnyStr
 from functools import wraps
 
 
@@ -82,7 +82,7 @@ class Cache:
 
     @call_history
     @count_calls
-    def store(self, data: Union[str, bytes, int, float]) -> str:
+    def store(self, data: Union[AnyStr, int, float]) -> str:
         """
         Store data in the Redis cache and return the key.
 
