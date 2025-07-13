@@ -2,6 +2,7 @@
 """
 Module containing a get_page function
 """
+import functools
 import requests
 import redis
 
@@ -10,6 +11,7 @@ redis_conn = redis.Redis()
 
 
 def track_url_access(func):
+    @functools.wraps(func)
     def wrapper(url: str) -> str:
         count_key = f"count:{url}"
         redis_conn.incr(count_key)
