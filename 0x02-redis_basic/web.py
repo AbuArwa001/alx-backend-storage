@@ -8,7 +8,7 @@ import functools
 
 # Initialize Redis connection
 redis_conn = redis.Redis()
-
+redis_conn.flushdb()
 
 def track_url_access(func):
     """
