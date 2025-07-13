@@ -86,7 +86,7 @@ class Cache:
 
     @call_history
     @count_calls
-    def store(self, data: Union[AnyStr, int, float]) -> str:
+    def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Store data in the Redis cache and return a unique key.
 
