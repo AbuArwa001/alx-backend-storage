@@ -93,7 +93,8 @@ class Cache:
         Parameters:
         ----------
         data : Union[str, bytes, int, float]
-            The data to store in the Redis cache. It can be a string, bytes, integer, or float.
+            The data to store in the Redis cache.
+            It can be a string, bytes, integer, or float.
 
         Returns:
         -------
@@ -104,7 +105,7 @@ class Cache:
         -----
         - The key is generated using `uuid.uuid4()` to ensure uniqueness.
         - The data is stored using Redis `SET` command.
-        
+
         Example:
         -------
         >>> cache = Cache()
