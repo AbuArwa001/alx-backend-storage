@@ -88,19 +88,54 @@ class Cache:
     @count_calls
     def store(self, data: Union[AnyStr, int, float]) -> str:
         """
-        Store data in the Redis cache and return the key.
+        Store data in the Redis cache and return a unique key.
 
         Parameters:
-        data (Union[str, bytes, int, float]): The data to store in the cache.
-            It can be of type str, bytes, int, or float.
+        ----------
+        data : Union[str, bytes, int, float]
+            The data to store in the Redis cache. It can be a string, bytes, integer, or float.
 
         Returns:
-        str: The key under which the data is stored.
-        Author: Khalfan Athman
+        -------
+        str
+            A UUID string key under which the data is stored in Redis.
+
+        Notes:
+        -----
+        - The key is generated using `uuid.uuid4()` to ensure uniqueness.
+        - The data is stored using Redis `SET` command.
+        
+        Example:
+        -------
+        >>> cache = Cache()
+        >>> key = cache.store("Hello Redis")
+        >>> print(key)  # e.g., '3f50b0f2-1df3-4cb9-8d91-0b2cf416cf6a'
+
+        Author:
+        -------
+        Khalfan Athman
         """
-        key = str(uuid.uuid4())  # Ensure key is a string
+        key: str = str(uuid.uuid4())
         self._redis.set(key, data)
         return key
+
+    # @call_history
+    # @count_calls
+    # def store(self, data: Union[AnyStr, int, float]) -> str:
+    #     """
+    #     Store data in the Redis cache and return the key.
+
+    #     Parameters:
+    #     data (Union[str, bytes, int, float]): The data to store in the cache.
+    #         It can be of type str, bytes, int, or float.
+
+    #     Returns:
+    #     str: The key under which the data is stored.
+    #     Author: Khalfan Athman
+    #     """
+    #     key = str(uuid.uuid4())  # Ensure key is a string
+    #     self._redis.set(key, data)
+    #     return key
 
     def get(
         self, key: str, fn: Optional[Callable] = None
