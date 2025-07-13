@@ -67,3 +67,8 @@ def get_page(url: str) -> str:
     print(f"{url} was called {count} {ts}:")
 
     return content
+
+
+if __name__ == "__main__":
+    get_page("http://google.com")
+    print("OK")
